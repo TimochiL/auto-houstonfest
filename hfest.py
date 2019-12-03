@@ -12,7 +12,6 @@ from models import School, Participant, Event, Registration
 @db_session
 def main():
     events = import_events()
-    print(events)
     hfest_workbook = openpyxl.load_workbook("Hfest.Registr.19.xlsx")  # TODO: Take in as arg
     hfest_registration: Worksheet = hfest_workbook['Registration']
     school_count = hfest_registration.max_column
@@ -38,10 +37,13 @@ def main():
                     # print("added", participant)
                 current_participant += 1
                 # print("inc part to", current_participant)
-            Registration(event=event, participants=participants)
+            if len(participants) > 0:
+                Registration(event=event, participants=participants)
             current_row += current_participant
         school_column += 1
 
+    # for r in select(r for r in Registration if r.event.name == "Skit 1"):
+    #     print(r)
     generate_names(hfest_workbook)
 
 

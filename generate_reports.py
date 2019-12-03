@@ -1,4 +1,3 @@
-from openpyxl.worksheet.worksheet import Worksheet
 from pony.orm import db_session, select
 
 from models import Registration
@@ -6,7 +5,7 @@ from models import Registration
 
 @db_session
 def generate_names(hfest_workbook):
-    registrations = select(r for r in Registration).order_by(Registration.event.name)
+    registrations = select(r for r in Registration).order_by(Registration.event)
     names_generated = hfest_workbook.create_sheet("Names (Generated)")
     # print("Event | Student | School")
     names_generated.cell(1, 1, "Event")
