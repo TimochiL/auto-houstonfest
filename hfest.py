@@ -5,7 +5,7 @@ import openpyxl
 from openpyxl.worksheet.worksheet import Worksheet
 from pony.orm import db_session
 
-from generate_reports import generate_names
+from generate_reports import generate_names, generate_judge_sheet
 from models import School, Participant, Event, Registration
 
 
@@ -45,13 +45,17 @@ def main():
     # for r in select(r for r in Registration if r.event.name == "Skit 1"):
     #     print(r)
     generate_names(hfest_workbook)
+    generate_judge_sheet()
 
 
 def import_events() -> List[Event]:
     events_reader = csv.reader(open("events.csv"))
     events = list()
     for row in list(events_reader)[1:]:
-        events.append(Event(name=row[0], max_participants=int(row[1]), is_group=bool(row[2])))
+        if row[2] == 'TRUE':
+            events.append(Event(name=row[0], max_participants=int(row[1]), is_group=True))
+        else:
+            events.append(Event(name=row[0], max_participants=int(row[1]), is_group=False))
     return events
 
 

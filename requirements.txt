@@ -1,2 +1,3 @@
-pony
 openpyxl
+pony
+python-docx
