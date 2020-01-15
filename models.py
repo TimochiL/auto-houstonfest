@@ -27,11 +27,11 @@ class Event(db.Entity):
     id = PrimaryKey(int, auto=True)
     name = Required(str)
     max_participants = Required(int)
-    is_group = Required(bool)
+    max_groups = Required(int)  # TODO: Use enums
     registrations = Set('Registration')
 
     def __repr__(self):
-        return F"<Event(id={self.id}, name='{self.name}', max_participants={self.max_participants}, is_group={self.is_group}, registrations={self.registrations})>"
+        return F"<Event(id={self.id}, name='{self.name}', max_participants={self.max_participants}, groups={self.max_groups}, registrations={self.registrations})>"
 
 
 class Registration(db.Entity):
