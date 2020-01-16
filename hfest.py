@@ -5,13 +5,13 @@ import openpyxl
 from openpyxl.worksheet.worksheet import Worksheet
 from pony.orm import db_session
 
-from generate_reports import generate_judge_sheet
+from generate_reports import generate_judge_sheet, generate_master_report
 from models import School, Participant, Event, Registration
 
 
 @db_session
 def main():
-    registration_files = glob.glob("*.xlsx")
+    registration_files = glob.glob("Reg.*.xlsx")
     print("Found files", registration_files)
     import_events(registration_files[0])
     print("Imported events")
@@ -38,6 +38,7 @@ def main():
                 if len(participants) > 0:
                     Registration(event=event, participants=participants)
                 current_row += current_participant
+    generate_master_report()
     generate_judge_sheet()
 
 
@@ -58,13 +59,12 @@ def import_events(workbook_file):
 
 def create_event(event_name, participant_count):
     is_group = "Group" in event_name
-    event_name = re.sub("[\(\[].*?[\)\]]", "", event_name).strip()
+    event_name = re.sub(R"[(\[].*?[)\]]", "", event_name).strip()
     if Event.get(name=event_name) is not None:
         event = Event.get(name=event_name)  # TODO: Use assignment operator when upgraded to 3.8
         event.max_groups += 1
     else:
         Event(name=event_name, max_participants=participant_count, max_groups=1 if is_group else 0)
-    print("check", event_name)
 
 
 def find_or_create_participant(name, school) -> Participant:

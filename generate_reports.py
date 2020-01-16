@@ -1,7 +1,19 @@
 from docx import Document
+from openpyxl import Workbook
 from pony.orm import db_session
 
 from models import Event, Participant
+
+
+@db_session
+def generate_master_report():
+    events = Event.select().order_by(Event.name)
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = 'Report'
+    for event in events:
+        worksheet.append([event.name, len(event.registrations)])
+    workbook.save("Master.Report.xlsx")
 
 
 @db_session
