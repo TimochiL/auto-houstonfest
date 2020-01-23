@@ -2,23 +2,52 @@ from docx import Document
 from openpyxl import Workbook
 from pony.orm import db_session
 
-from models import Event, Participant
+from boomer_utils import serialize_yes_or_no, adjust_column_width
+from models import Event, Participant, School
 
 
 @db_session
 def generate_master_report():
     events = Event.select().order_by(Event.name)
+    schools = School.select().order_by(School.name)
     workbook = Workbook()
-    worksheet = workbook.active
-    worksheet.title = 'Report'
+    event_worksheet = workbook.active
+    event_worksheet.title = 'Events'
     for event in events:
-        worksheet.append([event.name, len(event.registrations)])
+        event_worksheet.append([event.name, len(event.registrations)])
+    adjust_column_width(event_worksheet)
+
+    school_worksheet = workbook.create_sheet('Schools')
+    school_worksheet.append([
+        "School",
+        "Regular Registrations",
+        "Late Registrations",
+        "Registration Fees",
+        "Total Enrolled",
+        "Rookie Teacher",
+        "Rookie School",
+        "Attending State"
+    ])
+    for school in schools:
+        school_worksheet.append([
+            school.name,
+            school.regular_registrations,
+            school.late_registrations,
+            school.regular_registrations * 10 + school.late_registrations * 12,
+            school.total_enrolled,
+            serialize_yes_or_no(school.rookie_teacher),
+            serialize_yes_or_no(school.rookie_school),
+            serialize_yes_or_no(school.attending_state)
+        ])
+    adjust_column_width(school_worksheet)
+
     workbook.save("Master.Report.xlsx")
 
 
 @db_session
 def generate_judge_sheet():
     events = Event.select().order_by(Event.name)
+
     events_report = Document()
     for event in events:
         events_report.add_heading(event.name, 0)

@@ -5,6 +5,7 @@ import openpyxl
 from openpyxl.worksheet.worksheet import Worksheet
 from pony.orm import db_session
 
+from boomer_utils import parse_yes_or_no
 from generate_reports import generate_judge_sheet, generate_master_report
 from models import School, Participant, Event, Registration
 
@@ -18,13 +19,23 @@ def main():
     schools = list()
     for workbook_file in registration_files:
         workbook = openpyxl.load_workbook(workbook_file)
-        worksheet: Worksheet = workbook['Original']
+        worksheet = workbook['Original']
         school_name = worksheet.cell(4, 2).value
         print("Processing", school_name)
-        school = School(name=school_name)
+
+        school = School(
+            name=school_name,
+            regular_registrations=worksheet.cell(16, 2).value,
+            late_registrations=worksheet.cell(17, 2).value or 0,
+            total_enrolled=worksheet.cell(19, 2).value,
+            rookie_teacher=parse_yes_or_no(worksheet.cell(20, 2).value),
+            rookie_school=parse_yes_or_no(worksheet.cell(21, 2).value),
+            attending_state=parse_yes_or_no(worksheet.cell(22, 2).value)
+        )
         schools.append(school)
 
         current_row = 37
+
         for event in Event.select():
             for group in range(max(event.max_groups, 1)):
                 current_participant = 0
@@ -38,6 +49,7 @@ def main():
                 if len(participants) > 0:
                     Registration(event=event, participants=participants)
                 current_row += current_participant
+
     generate_master_report()
     generate_judge_sheet()
 
