@@ -2,7 +2,6 @@ import glob
 import re
 
 import openpyxl
-from openpyxl.worksheet.worksheet import Worksheet
 from pony.orm import db_session
 
 from boomer_utils import parse_yes_or_no
@@ -76,7 +75,7 @@ def create_event(event_name, participant_count):
         event = Event.get(name=event_name)  # TODO: Use assignment operator when upgraded to 3.8
         event.max_groups += 1
     else:
-        Event(name=event_name, max_participants=participant_count, max_groups=1 if is_group else 0)
+        Event(name=event_name, max_participants=participant_count, max_groups=is_group)
 
 
 def find_or_create_participant(name, school) -> Participant:
