@@ -1,5 +1,7 @@
 /.idea
 /__pycache__
+/build
+/dist
 /venv
 *.docx
 *.xlsx
