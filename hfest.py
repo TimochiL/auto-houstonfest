@@ -24,7 +24,7 @@ def main():
 
         school = School(
             name=school_name,
-            regular_registrations=worksheet.cell(16, 2).value,
+            regular_registrations=worksheet.cell(16, 2).value or 0,
             late_registrations=worksheet.cell(17, 2).value or 0,
             total_enrolled=worksheet.cell(19, 2).value,
             rookie_teacher=parse_yes_or_no(worksheet.cell(20, 2).value),
@@ -41,7 +41,7 @@ def main():
                 participants = list()
                 while current_participant < event.max_participants:
                     participant_name = worksheet.cell(current_row + current_participant, 2).value
-                    if participant_name is not None:
+                    if participant_name is not None and participant_name.strip():
                         participant = find_or_create_participant(participant_name, school)
                         participants.append(participant)
                     current_participant += 1
