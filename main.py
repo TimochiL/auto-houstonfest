@@ -1,20 +1,29 @@
 import glob
+import os
 import re
+import sys
 
 import openpyxl
 from pony.orm import db_session
 
 from boomer_utils import parse_yes_or_no
-from generate_reports import generate_judge_sheet, generate_master_report
+from generate_reports import generate_judge_report, generate_master_report, MASTER_REPORT, JUDGE_REPORT
 from models import School, Participant, Event, Registration
 
 
 @db_session
 def main():
+    warn_if_file_locked(MASTER_REPORT)
+    warn_if_file_locked(JUDGE_REPORT)
+
     registration_files = glob.glob("Reg.*.xlsx")
-    print("Found files", registration_files)
+    if not registration_files:
+        print("No registration files found")
+        sys.exit(1)
+    print("Found registration files", registration_files)
     import_events(registration_files[0])
     print("Imported events")
+
     schools = list()
     for workbook_file in registration_files:
         workbook = openpyxl.load_workbook(workbook_file)
@@ -33,24 +42,32 @@ def main():
         )
         schools.append(school)
 
-        current_row = 37
-
+        event_row = 37
         for event in Event.select():
             for group in range(max(event.max_groups, 1)):
-                current_participant = 0
+                participant_row = 0
                 participants = list()
-                while current_participant < event.max_participants:
-                    participant_name = worksheet.cell(current_row + current_participant, 2).value
+                while participant_row < event.max_participants:
+                    participant_name = worksheet.cell(event_row + participant_row, 2).value
                     if participant_name is not None and participant_name.strip():
                         participant = find_or_create_participant(participant_name, school)
                         participants.append(participant)
-                    current_participant += 1
+                    participant_row += 1
                 if len(participants) > 0:
                     Registration(event=event, participants=participants)
-                current_row += current_participant
+                event_row += participant_row
 
     generate_master_report()
-    generate_judge_sheet()
+    generate_judge_report()
+
+
+def warn_if_file_locked(file):
+    if os.path.exists(file):
+        try:
+            os.rename(file, file)  # Windows workaround, os.access(file, os.W_OK) passes even if locked
+        except OSError:
+            print(file, "is open in another program, please close it to continue")
+        sys.exit(1)
 
 
 def import_events(workbook_file):
@@ -72,7 +89,7 @@ def create_event(event_name, participant_count):
     is_group = "Group" in event_name
     event_name = re.sub(R"[(\[].*?[)\]]", "", event_name).strip()
     if Event.get(name=event_name) is not None:
-        event = Event.get(name=event_name)  # TODO: Use assignment operator when upgraded to 3.8
+        event = Event.get(name=event_name)  # TODO: Use walrus operator when upgraded to 3.8
         event.max_groups += 1
     else:
         Event(name=event_name, max_participants=participant_count, max_groups=is_group)

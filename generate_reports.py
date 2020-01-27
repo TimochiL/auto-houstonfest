@@ -5,6 +5,9 @@ from pony.orm import db_session
 from boomer_utils import serialize_yes_or_no, adjust_column_width
 from models import Event, Participant, School
 
+MASTER_REPORT = "Master.Report.xlsx"
+JUDGE_REPORT = "Judge.Report.docx"
+
 
 @db_session
 def generate_master_report():
@@ -41,35 +44,44 @@ def generate_master_report():
         ])
     adjust_column_width(school_worksheet)
 
-    workbook.save("Master.Report.xlsx")
+    workbook.save(MASTER_REPORT)
 
 
 @db_session
-def generate_judge_sheet():
+def generate_judge_report():
     events = Event.select().order_by(Event.name)
 
     events_report = Document()
     for event in events:
         events_report.add_heading(event.name, 0)
         table = events_report.add_table(rows=1, cols=2)
-        header_cells = table.rows[0].cells
         if event.max_groups > 0:
-            header_cells[0].text = "School"
-            header_cells[1].text = "Participants"
-            for registration in event.registrations:
-                row_cells = table.add_row().cells
-                school = list(registration.participants)[0].school
-                row_cells[0].text = school.name
-                participants = registration.participants.order_by(Participant.name)
-                row_cells[1].text = '\n'.join(p.name for p in participants)
+            create_group_table(event, table)
         else:
-            header_cells[0].text = "Participant"
-            header_cells[1].text = "School"
-            for registration in event.registrations:
-                for participant in registration.participants.order_by(Participant.name):
-                    row_cells = table.add_row().cells
-                    row_cells[0].text = participant.name
-                    school = list(registration.participants)[0].school
-                    row_cells[1].text = school.name
+            create_individual_table(event, table)
         events_report.add_page_break()
-    events_report.save("Judge.Report.docx")
+    events_report.save(JUDGE_REPORT)
+
+
+def create_group_table(event, table):
+    header_cells = table.rows[0].cells
+    header_cells[0].text = "School"
+    header_cells[1].text = "Participants"
+    for registration in event.registrations:
+        row_cells = table.add_row().cells
+        school = list(registration.participants)[0].school
+        row_cells[0].text = school.name
+        participants = registration.participants.order_by(Participant.name)
+        row_cells[1].text = '\n'.join(p.name for p in participants)
+
+
+def create_individual_table(event, table):
+    header_cells = table.rows[0].cells
+    header_cells[0].text = "Participant"
+    header_cells[1].text = "School"
+    for registration in event.registrations:
+        for participant in registration.participants.order_by(Participant.name):
+            row_cells = table.add_row().cells
+            row_cells[0].text = participant.name
+            school = list(registration.participants)[0].school
+            row_cells[1].text = school.name
