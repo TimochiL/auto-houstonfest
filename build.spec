@@ -1,4 +1,4 @@
-a = Analysis(['hfest.py'],
+a = Analysis(['main.py'],
              hiddenimports=['pony.orm.dbproviders.sqlite'])
 pyz = PYZ(a.pure)
 exe = EXE(pyz,
