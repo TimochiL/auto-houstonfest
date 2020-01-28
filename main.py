@@ -50,7 +50,11 @@ def main():
                         participants.append(participant)
                     participant_row += 1
                 if len(participants) > 0:
-                    Registration(event=event, participants=participants)
+                    if event.max_groups == 0:
+                        for participant in participants:
+                            Registration(event=event, participants=participant)
+                    else:
+                        Registration(event=event, participants=participants)
                 event_row += participant_row
 
     generate_master_report()

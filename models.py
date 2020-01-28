@@ -33,7 +33,7 @@ class Event(db.Entity):
     id = PrimaryKey(int, auto=True)
     name = Required(str)
     max_participants = Required(int)
-    max_groups = Required(int)  # TODO: Use enums
+    max_groups = Required(int)  # 0 = Individual
     registrations = Set('Registration')
 
     def __repr__(self):
