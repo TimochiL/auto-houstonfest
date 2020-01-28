@@ -1,5 +1,4 @@
 import glob
-import os
 import re
 import sys
 
@@ -7,7 +6,7 @@ import openpyxl
 from pony.orm import db_session
 
 from boomer_utils import parse_yes_or_no
-from generate_reports import generate_judge_report, generate_master_report, MASTER_REPORT, JUDGE_REPORT
+from generate_reports import generate_judge_report, generate_master_report
 from models import School, Participant, Event, Registration
 
 

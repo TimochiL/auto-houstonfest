@@ -1,3 +1,5 @@
+from operator import attrgetter
+
 from docx import Document
 from openpyxl import Workbook
 from pony.orm import db_session
@@ -79,9 +81,8 @@ def create_individual_table(event, table):
     header_cells = table.rows[0].cells
     header_cells[0].text = "Participant"
     header_cells[1].text = "School"
-    for registration in event.registrations:
-        for participant in registration.participants.order_by(Participant.name):
-            row_cells = table.add_row().cells
-            row_cells[0].text = participant.name
-            school = list(registration.participants)[0].school
-            row_cells[1].text = school.name
+    participants = sorted(event.registrations.participants, key=attrgetter('name'))
+    for participant in participants:
+        row_cells = table.add_row().cells
+        row_cells[0].text = participant.name
+        row_cells[1].text = participant.school.name
