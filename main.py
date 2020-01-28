@@ -13,9 +13,6 @@ from models import School, Participant, Event, Registration
 
 @db_session
 def main():
-    warn_if_file_locked(MASTER_REPORT)
-    warn_if_file_locked(JUDGE_REPORT)
-
     registration_files = glob.glob("Reg.*.xlsx")
     if not registration_files:
         print("No registration files found")
@@ -59,15 +56,6 @@ def main():
 
     generate_master_report()
     generate_judge_report()
-
-
-def warn_if_file_locked(file):
-    if os.path.exists(file):
-        try:
-            os.rename(file, file)  # Windows workaround, os.access(file, os.W_OK) passes even if locked
-        except OSError:
-            print(file, "is open in another program, please close it to continue")
-        sys.exit(1)
 
 
 def import_events(workbook_file):
