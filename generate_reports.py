@@ -61,6 +61,7 @@ def generate_judge_report():
             create_group_table(event, table)
         else:
             create_individual_table(event, table)
+        table.style = 'Table Grid'
         events_report.add_page_break()
     events_report.save(JUDGE_REPORT)
 
