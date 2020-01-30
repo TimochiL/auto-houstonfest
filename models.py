@@ -8,6 +8,7 @@ class School(db.Entity):
     id = PrimaryKey(int, auto=True)
     name = Required(str)
     participants = Set('Participant')
+    registrations = Set('Registration')
     regular_registrations = Required(int)
     late_registrations = Required(int)
     total_enrolled = Required(int)
@@ -16,7 +17,7 @@ class School(db.Entity):
     attending_state = Required(bool)
 
     def __repr__(self):
-        return F"<School(id={self.id}, name='{self.name}', participants={self.participants})>"
+        return F"<School(id={self.id}, name='{self.name}', participants={self.participants}, registrations={self.registrations})>"
 
 
 class Participant(db.Entity):
@@ -43,10 +44,11 @@ class Event(db.Entity):
 class Registration(db.Entity):
     id = PrimaryKey(int, auto=True)
     event = Required(Event)
+    school = Required(School)
     participants = Set(Participant)
 
     def __repr__(self):
-        return F"<Registration(id={self.id}, event='{self.event.name}', participants={[p.name for p in self.participants]})>"
+        return F"<Registration(id={self.id}, event='{self.event.name}', school='{self.school.name}', participants={[p.name for p in self.participants]})>"
 
 
 db.generate_mapping(create_tables=True)

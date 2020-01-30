@@ -52,9 +52,9 @@ def main():
                 if len(participants) > 0:
                     if event.max_groups == 0:
                         for participant in participants:
-                            Registration(event=event, participants=participant)
+                            Registration(event=event, school=school, participants=participant)
                     else:
-                        Registration(event=event, participants=participants)
+                        Registration(event=event, school=school, participants=participants)
                 event_row += participant_row
 
     generate_master_report()
