@@ -47,6 +47,7 @@ def generate_master_report():
     adjust_column_width(school_worksheet)
 
     workbook.save(MASTER_REPORT)
+    print("Saved", MASTER_REPORT)
 
 
 @db_session
@@ -55,6 +56,7 @@ def generate_judge_report():
 
     events_report = Document()
     for event in events:
+        print("Writing", event.name)
         events_report.add_heading(event.name, 0)
         table = events_report.add_table(rows=1, cols=2)
         if event.max_groups > 0:
@@ -63,14 +65,17 @@ def generate_judge_report():
             create_individual_table(event, table)
         table.style = 'Table Grid'
         events_report.add_page_break()
+
     events_report.save(JUDGE_REPORT)
+    print("Saved", JUDGE_REPORT)
 
 
 def create_group_table(event, table):
     header_cells = table.rows[0].cells
     header_cells[0].text = "School"
     header_cells[1].text = "Participants"
-    for registration in event.registrations:
+    registrations = event.registrations.order_by(lambda r: r.school.name)
+    for registration in registrations:
         row_cells = table.add_row().cells
         school = list(registration.participants)[0].school
         row_cells[0].text = school.name
