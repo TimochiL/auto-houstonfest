@@ -90,8 +90,7 @@ def find_or_create_participant(name, school) -> Participant:
     participant = Participant.get(name=name, school=school)
     if participant is None:
         return Participant(name=name, school=school)
-    else:
-        return participant
+    return participant
 
 
 if __name__ == '__main__':
