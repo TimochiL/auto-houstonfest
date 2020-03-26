@@ -20,7 +20,7 @@ def main():
     import_events(registration_files[0])
     print("Imported events")
 
-    schools = list()
+    schools = []
     for workbook_file in registration_files:
         workbook = openpyxl.load_workbook(workbook_file)
         worksheet = workbook['Original']
@@ -42,7 +42,7 @@ def main():
         for event in Event.select():
             for group in range(max(event.max_groups, 1)):
                 participant_row = 0
-                participants = list()
+                participants = []
                 while participant_row < event.max_participants:
                     participant_name = worksheet.cell(event_row + participant_row, 2).value
                     if participant_name is not None and participant_name.strip():
