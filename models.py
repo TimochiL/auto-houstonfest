@@ -1,4 +1,4 @@
-from pony.orm import *
+from pony.orm import Database, PrimaryKey, Required, Set
 
 db = Database()
 db.bind(provider='sqlite', filename=':memory:', create_db=True)
