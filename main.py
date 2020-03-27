@@ -40,7 +40,7 @@ def main():
 
         event_row = 37
         for event in Event.select():
-            for group in range(max(event.max_groups, 1)):
+            for _ in range(max(event.max_groups, 1)):
                 participant_row = 0
                 participants = []
                 while participant_row < event.max_participants:
