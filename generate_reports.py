@@ -1,18 +1,17 @@
-from operator import attrgetter
-
-from docx import Document
 from openpyxl import Workbook
 from pony.orm import db_session
 
 from boomer_utils import serialize_yes_or_no, adjust_column_width
-from models import Event, Participant, School
+from models import Event, School
 
-MASTER_REPORT = "Master.Report.xlsx"
-JUDGE_REPORT = "Judge.Report.docx"
+MASTER_REPORT = "output/Master.Report.xlsx"
+JUDGE_REPORT = "output/Judge.Report.docx"
 
 
 @db_session
 def generate_master_report():
+    print("Generating master report")
+
     events = Event.select().order_by(Event.name)
     schools = School.select().order_by(School.name)
     workbook = Workbook()
@@ -47,48 +46,30 @@ def generate_master_report():
     adjust_column_width(school_worksheet)
 
     workbook.save(MASTER_REPORT)
-    print("Saved", MASTER_REPORT)
 
 
 @db_session
-def generate_judge_report():
+def generate_event_sheets():
     events = Event.select().order_by(Event.name)
-
-    events_report = Document()
     for event in events:
-        print("Writing", event.name)
-        events_report.add_heading(event.name, 0)
-        table = events_report.add_table(rows=1, cols=2)
-        if event.max_groups > 0:
-            create_group_table(event, table)
-        else:
-            create_individual_table(event, table)
-        table.style = 'Table Grid'
-        events_report.add_page_break()
-
-    events_report.save(JUDGE_REPORT)
-    print("Saved", JUDGE_REPORT)
+        generate_event_sheet(event)
 
 
-def create_group_table(event, table):
-    header_cells = table.rows[0].cells
-    header_cells[0].text = "School"
-    header_cells[1].text = "Participants"
-    registrations = event.registrations.order_by(lambda r: r.school.name)
-    for registration in registrations:
-        row_cells = table.add_row().cells
-        school = list(registration.participants)[0].school
-        row_cells[0].text = school.name
-        participants = registration.participants.order_by(Participant.name)
-        row_cells[1].text = '\n'.join(p.name for p in participants)
+def generate_event_sheet(event):
+    print("Generating", event.name, "judge sheet")
+    workbook = Workbook()
+    worksheet = workbook.active
 
+    worksheet.append([
+        "Participant(s)",
+        "School"
+    ])
+    for registration in event.registrations:
+        worksheet.append([
+            '\n'.join(p.name for p in registration.participants),
+            registration.school.name
+        ])
+    adjust_column_width(worksheet)
 
-def create_individual_table(event, table):
-    header_cells = table.rows[0].cells
-    header_cells[0].text = "Participant"
-    header_cells[1].text = "School"
-    participants = sorted(event.registrations.participants, key=attrgetter('name'))
-    for participant in participants:
-        row_cells = table.add_row().cells
-        row_cells[0].text = participant.name
-        row_cells[1].text = participant.school.name
+    event_sheet = F"output/Event.{event.name}.xlsx"
+    workbook.save(event_sheet)
