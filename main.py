@@ -65,7 +65,7 @@ def main():
 
     print()
     print("Script written by Damian Lall, CHS class of 2021")
-    print("Task completed, press the ENTER key to exit")
+    print("Task completed, press the ENTER key to exit", end='')
     input()
 
 

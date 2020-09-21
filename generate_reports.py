@@ -1,7 +1,7 @@
 from openpyxl import Workbook
 from pony.orm import db_session
 
-from boomer_utils import serialize_yes_or_no, adjust_column_width
+from boomer_utils import serialize_yes_or_no, adjust_cell_sizes, adjust_cell_sizes_for_judge_feedback
 from models import Event, School
 
 MASTER_REPORT = "output/Master.Report.xlsx"
@@ -19,7 +19,7 @@ def generate_master_report():
     event_worksheet.title = 'Events'
     for event in events:
         event_worksheet.append([event.name, len(event.registrations)])
-    adjust_column_width(event_worksheet)
+    adjust_cell_sizes(event_worksheet)
 
     school_worksheet = workbook.create_sheet('Schools')
     school_worksheet.append([
@@ -43,7 +43,7 @@ def generate_master_report():
             serialize_yes_or_no(school.rookie_school),
             serialize_yes_or_no(school.attending_state)
         ])
-    adjust_column_width(school_worksheet)
+    adjust_cell_sizes(school_worksheet)
 
     workbook.save(MASTER_REPORT)
 
@@ -62,14 +62,37 @@ def generate_event_sheet(event):
 
     worksheet.append([
         "Participant(s)",
-        "School"
+        "School",
+        "Score on Crit. 1, Judge 1",
+        "Score on Crit. 2, Judge 1",
+        "Score on Crit. 3, Judge 1",
+        "Score on Crit. 4, Judge 1",
+        "Score on Crit. 5, Judge 1",
+        "Total, Judge 1",
+        "Comments, Judge 1",
+        "Score on Crit. 1, Judge 2",
+        "Score on Crit. 2, Judge 2",
+        "Score on Crit. 3, Judge 3",
+        "Score on Crit. 4, Judge 4",
+        "Score on Crit. 5, Judge 5",
+        "Total, Judge 2",
+        "Comments, Judge 2",
+        "Score on Crit. 1, Judge 3",
+        "Score on Crit. 2, Judge 3",
+        "Score on Crit. 3, Judge 3",
+        "Score on Crit. 4, Judge 3",
+        "Score on Crit. 5, Judge 3",
+        "Total, Judge 3",
+        "Comments, Judge 3",
+        "One-time deduction, if any (enter as a positive number)",
+        "Total Score"
     ])
     for registration in event.registrations:
         worksheet.append([
             '\n'.join(p.name for p in registration.participants),
             registration.school.name
         ])
-    adjust_column_width(worksheet)
+    adjust_cell_sizes_for_judge_feedback(worksheet)
 
     event_sheet = F"output/Event.{event.name}.xlsx"
     workbook.save(event_sheet)
