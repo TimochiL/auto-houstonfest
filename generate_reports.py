@@ -1,4 +1,5 @@
 from openpyxl import Workbook
+from openpyxl.worksheet.datavalidation import DataValidation
 from pony.orm import db_session
 
 from boomer_utils import serialize_yes_or_no, adjust_cell_sizes, adjust_cell_sizes_for_judge_feedback
@@ -87,11 +88,27 @@ def generate_event_sheet(event):
         "One-time deduction, if any (enter as a positive number)",
         "Total Score"
     ])
-    for registration in event.registrations:
+
+    # Only allow point values from zero to twenty
+    point_validator = DataValidation(type='whole', operator='between', formula1=0, formula2=20)
+    worksheet.add_data_validation(point_validator)
+
+    for row, registration in enumerate(event.registrations, 2):
         worksheet.append([
             '\n'.join(p.name for p in registration.participants),
-            registration.school.name
+            registration.school.name,
+            '', '', '', '', '',
+            f"=SUM(C{row}:G{row})",
+            '', '', '', '', '', '',
+            f"=SUM(J{row}:N{row})",
+            '', '', '', '', '', '',
+            f"=SUM(Q{row}:U{row})",
+            '', '',
+            f"=H{row} + O{row} + V{row} - X{row}"
         ])
+        point_validator.add(f"C{row}:G{row}")
+        point_validator.add(f"J{row}:N{row}")
+        point_validator.add(f"Q{row}:U{row}")
     adjust_cell_sizes_for_judge_feedback(worksheet)
 
     event_sheet = F"output/Event.{event.name}.xlsx"
