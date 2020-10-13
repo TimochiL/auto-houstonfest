@@ -3,6 +3,12 @@ from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
 
 
+def parse_yes_or_no(answer) -> bool:
+    if answer is None:
+        return False
+    return answer.lower() == 'yes'
+
+
 def serialize_yes_or_no(boolean) -> str:
     return 'yes' if boolean else 'no'
 

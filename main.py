@@ -1,11 +1,11 @@
 import glob
 import re
-from distutils.util import strtobool
 from pathlib import Path
 
 import openpyxl
 from pony.orm import db_session
 
+from boomer_utils import parse_yes_or_no
 from generate_reports import generate_master_report, generate_event_sheets
 from models import School, Participant, Event, Registration
 
@@ -31,12 +31,12 @@ def main():
 
         school = School(
             name=school_name,
-            regular_registrations=worksheet.cell(16, 2).value or 0,
+            regular_registrations=worksheet.cell(16, 2).value or 0,  # Default to zero if not specified
             late_registrations=worksheet.cell(17, 2).value or 0,
             total_enrolled=worksheet.cell(19, 2).value,
-            rookie_teacher=strtobool(worksheet.cell(20, 2).value or 'no'),  # Default to no if not selected
-            rookie_school=strtobool(worksheet.cell(21, 2).value or 'no'),
-            attending_state=strtobool(worksheet.cell(22, 2).value or 'no')
+            rookie_teacher=parse_yes_or_no(worksheet.cell(20, 2).value or 'no'),  # Default to no if not specified
+            rookie_school=parse_yes_or_no(worksheet.cell(21, 2).value or 'no'),
+            attending_state=parse_yes_or_no(worksheet.cell(22, 2).value or 'no')
         )
         schools.append(school)
 
