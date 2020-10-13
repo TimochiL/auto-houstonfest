@@ -1,6 +1,8 @@
 from openpyxl import Workbook
+from openpyxl.styles import Protection
 from openpyxl.worksheet.datavalidation import DataValidation
 from pony.orm import db_session
+from setuptools.namespaces import flatten
 
 from boomer_utils import serialize_yes_or_no, adjust_cell_sizes, adjust_cell_sizes_for_judge_feedback
 from models import Event, School
@@ -61,6 +63,7 @@ def generate_event_sheet(event):
     workbook = Workbook()
     worksheet = workbook.active
 
+    # Fill headers
     worksheet.append([
         "Participant(s)",
         "School",
@@ -89,27 +92,41 @@ def generate_event_sheet(event):
         "Total Score"
     ])
 
-    # Only allow point values from zero to twenty
-    point_validator = DataValidation(type='whole', operator='between', formula1=0, formula2=20)
-    worksheet.add_data_validation(point_validator)
-
+    # Set formulas
     for row, registration in enumerate(event.registrations, 2):
         worksheet.append([
             '\n'.join(p.name for p in registration.participants),
             registration.school.name,
             '', '', '', '', '',
-            f"=SUM(C{row}:G{row})",
+            f"=SUM(C{row}:G{row})",  # Total judge 1
             '', '', '', '', '', '',
-            f"=SUM(J{row}:N{row})",
+            f"=SUM(J{row}:N{row})",  # Total judge 2
             '', '', '', '', '', '',
-            f"=SUM(Q{row}:U{row})",
+            f"=SUM(Q{row}:U{row})",  # Total judge 3
             '', '',
-            f"=H{row} + O{row} + V{row} - X{row}"
+            f"=H{row} + O{row} + V{row} - X{row}"  # Total score
         ])
-        point_validator.add(f"C{row}:G{row}")
-        point_validator.add(f"J{row}:N{row}")
-        point_validator.add(f"Q{row}:U{row}")
-    adjust_cell_sizes_for_judge_feedback(worksheet)
 
+    # Lock worksheet while unlocking judge input cells
+    worksheet.protection.sheet = True
+    max_row = len(event.registrations) + 1
+    input_cell_panes = worksheet[f"C2:G{max_row}"] \
+        + worksheet[f"I2:N{max_row}"] \
+        + worksheet[f"P2:U{max_row}"] \
+        + worksheet[f"W2:X{max_row}"]
+    input_cells = flatten(input_cell_panes)
+    for cell in input_cells:
+        cell.protection = Protection(locked=False)
+
+    # Only allow point values from zero to twenty
+    point_validator = DataValidation(type='whole', operator='between', formula1=0, formula2=20)
+    worksheet.add_data_validation(point_validator)
+    point_validator.add(f"C2:G{max_row}")
+    point_validator.add(f"J2:N{max_row}")
+    point_validator.add(f"Q2:U{max_row}")
+    point_validator.add(f"X2:X{max_row}")
+
+    # Finalize and save
+    adjust_cell_sizes_for_judge_feedback(worksheet)
     event_sheet = F"output/Event.{event.name}.xlsx"
     workbook.save(event_sheet)
