@@ -5,7 +5,7 @@ from pony.orm import db_session
 from setuptools.namespaces import flatten
 
 from boomer_utils import serialize_yes_or_no, adjust_cell_sizes, adjust_cell_sizes_for_judge_feedback
-from models import Event, School
+from models import Event, School, Participant
 
 MASTER_REPORT = "output/Master.Report.xlsx"
 JUDGE_REPORT = "output/Judge.Report.docx"
@@ -95,7 +95,7 @@ def generate_event_sheet(event):
     # Set formulas
     for row, registration in enumerate(event.registrations, 2):
         worksheet.append([
-            '\n'.join(p.name for p in registration.participants),
+            '\n'.join(p.name for p in registration.participants.order_by(Participant.name)),
             registration.school.name,
             '', '', '', '', '',
             f"=SUM(C{row}:G{row})",  # Total judge 1
