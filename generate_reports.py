@@ -59,7 +59,11 @@ def generate_event_sheets():
 
 
 def generate_event_sheet(event):
-    print("Generating", event.name, "judge sheet")
+    if len(event.registrations) > 0:
+        print("Generating", event.name, "judge sheet")
+    else:
+        print("No registrations for", event.name)
+        return
     workbook = Workbook()
     worksheet = workbook.active
 
