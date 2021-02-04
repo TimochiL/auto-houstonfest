@@ -1,5 +1,6 @@
 from openpyxl import Workbook
-from openpyxl.styles import Protection
+from openpyxl.styles import PatternFill, Side, Border, Font, Alignment
+from openpyxl.styles.borders import BORDER_THIN
 from openpyxl.worksheet.datavalidation import DataValidation
 from pony.orm import db_session
 from setuptools.namespaces import flatten
@@ -111,16 +112,50 @@ def generate_event_sheet(event):
             f"=H{row} + O{row} + V{row} - X{row}"  # Total score
         ])
 
-    # Lock worksheet while unlocking judge input cells
-    worksheet.protection.sheet = True
+    # Apply gray background, black border, and wrapped text to all active cells
+    gray_fill = PatternFill(start_color="BFBFBF", end_color="BFBFBF", fill_type="solid")
+    thin_border = Border(left=Side(style=BORDER_THIN),
+                         right=Side(style=BORDER_THIN),
+                         top=Side(style=BORDER_THIN),
+                         bottom=Side(style=BORDER_THIN))
+    wrapped = Alignment(vertical='center', wrap_text=True)
     max_row = len(event.registrations) + 1
+    all_cell_panes = worksheet[f"A1:Y{max_row}"]
+    all_cells = flatten(all_cell_panes)
+    for cell in all_cells:
+        cell.fill = gray_fill
+        cell.border = thin_border
+        cell.alignment = wrapped
+
+    # Apply white background to all input cells
+    white_fill = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type=None)
     input_cell_panes = worksheet[f"C2:G{max_row}"] \
         + worksheet[f"I2:N{max_row}"] \
         + worksheet[f"P2:U{max_row}"] \
         + worksheet[f"W2:X{max_row}"]
     input_cells = flatten(input_cell_panes)
     for cell in input_cells:
-        cell.protection = Protection(locked=False)
+        cell.fill = white_fill
+
+    # Center all scores
+    centered = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    score_cell_panes = worksheet[f"C2:H{max_row}"] \
+        + worksheet[f"I2:O{max_row}"] \
+        + worksheet[f"P2:V{max_row}"] \
+        + worksheet[f"W2:Y{max_row}"]
+    score_cells = flatten(score_cell_panes)
+    for cell in score_cells:
+        cell.alignment = centered
+
+    # Bold total scores
+    bold = Font(bold=True)
+    total_score_cell_panes = worksheet[f"H2:H{max_row}"] \
+        + worksheet[f"O2:O{max_row}"] \
+        + worksheet[f"V2:V{max_row}"] \
+        + worksheet[f"Y2:Y{max_row}"]
+    total_score_cells = flatten(total_score_cell_panes)
+    for cell in total_score_cells:
+        cell.font = bold
 
     # Only allow point values from zero to twenty
     point_validator = DataValidation(type='whole', operator='between', formula1=0, formula2=20)
