@@ -6,21 +6,22 @@ import openpyxl
 from pony.orm import db_session
 
 from boomer_utils import parse_yes_or_no
-from generate_reports import generate_master_report, generate_event_sheets
+from generate_reports import generate_master_report, generate_event_sheet, generate_judge_report
 from models import School, Participant, Event, Registration
 
-EVENT_START_ROW = 37  # Where school information ends and event listings start
+EVENT_START_ROW = 25  # Where school information ends and event listings start
 
 
 @db_session
 def main():
     registration_files = glob.glob("Reg.*.xlsx")
     if not registration_files:  # Exit if no registration files found
-        print("No registration files found")
+        print("NO REGISTRATION FILES FOUND")
         return
-    print(F"Found {len(registration_files)} registration files")
+    enable_event_sheets = input("GENERATE EVENT SHEETS? (YES/NO) ")
+    print(F"FOUND {len(registration_files)} REGISTRATION FILE(S)")
     event_count = import_events(registration_files[0])  # Import event listings from the first workbook
-    print(F"Imported {event_count} events")
+    print(F"IMPORTED {event_count} EVENTS")
 
     schools = []
     for workbook_file in registration_files:
@@ -60,12 +61,18 @@ def main():
                 event_row += participant_row
 
     Path('output').mkdir(exist_ok=True)
-    generate_event_sheets()
-    generate_master_report()
+    events = Event.select().order_by(Event.name)
+    schools = School.select().order_by(School.name)
+    generate_master_report(events, schools)
+    generate_judge_report(events)
+    if parse_yes_or_no(enable_event_sheets):
+        Path('output/events').mkdir(exist_ok=True)
+        for event in events:
+            generate_event_sheet(event)
 
     print()
-    print("Script written by Damian Lall, CHS class of 2021")
-    print("Task completed, press the ENTER key to exit", end='')
+    print("SCRIPT WRITTEN BY DAMIAN LALL, CHS '21")
+    print("TASK COMPLETE, PRESS ENTER TO EXIT", end='')
     input()
 
 

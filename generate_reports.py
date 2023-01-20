@@ -1,23 +1,26 @@
+from operator import attrgetter
+
+from docx import Document
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Side, Border, Font, Alignment
 from openpyxl.styles.borders import BORDER_THIN
 from openpyxl.worksheet.datavalidation import DataValidation
-from pony.orm import db_session
 from setuptools.namespaces import flatten
 
 from boomer_utils import serialize_yes_or_no, adjust_cell_sizes, adjust_cell_sizes_for_judge_feedback
-from models import Event, School, Participant
+from models import Participant
 
 MASTER_REPORT = "output/Master.Report.xlsx"
 JUDGE_REPORT = "output/Judge.Report.docx"
+EVENT_SHEETS = "output/events"
+REGULAR_FEE = 12
+LATE_FEE = 15
 
 
-@db_session
-def generate_master_report():
-    print("Generating master report")
+def generate_master_report(events, schools):
+    print("GENERATING MASTER REPORT")
+    print(F"${REGULAR_FEE} REGULAR / ${LATE_FEE} LATE")
 
-    events = Event.select().order_by(Event.name)
-    schools = School.select().order_by(School.name)
     workbook = Workbook()
     event_worksheet = workbook.active
     event_worksheet.title = 'Events'
@@ -41,7 +44,7 @@ def generate_master_report():
             school.name,
             school.regular_registrations,
             school.late_registrations,
-            school.regular_registrations * 10 + school.late_registrations * 12,
+            school.regular_registrations * REGULAR_FEE + school.late_registrations * LATE_FEE,
             school.total_enrolled,
             serialize_yes_or_no(school.rookie_teacher),
             serialize_yes_or_no(school.rookie_school),
@@ -52,11 +55,45 @@ def generate_master_report():
     workbook.save(MASTER_REPORT)
 
 
-@db_session
-def generate_event_sheets():
-    events = Event.select().order_by(Event.name)
+def generate_judge_report(events):
+    events_report = Document()
     for event in events:
-        generate_event_sheet(event)
+        print("Writing", event.name)
+        events_report.add_heading(event.name, 0)
+        table = events_report.add_table(rows=1, cols=2)
+        if event.max_groups > 0:
+            create_group_table(event, table)
+        else:
+            create_individual_table(event, table)
+        table.style = 'Table Grid'
+        events_report.add_page_break()
+
+    events_report.save(JUDGE_REPORT)
+    print("Saved", JUDGE_REPORT)
+
+
+def create_group_table(event, table):
+    header_cells = table.rows[0].cells
+    header_cells[0].text = "School"
+    header_cells[1].text = "Participants"
+    registrations = event.registrations.order_by(lambda r: r.school.name)
+    for registration in registrations:
+        row_cells = table.add_row().cells
+        school = list(registration.participants)[0].school
+        row_cells[0].text = school.name
+        participants = registration.participants.order_by(Participant.name)
+        row_cells[1].text = '\n'.join(p.name for p in participants)
+
+
+def create_individual_table(event, table):
+    header_cells = table.rows[0].cells
+    header_cells[0].text = "Participant"
+    header_cells[1].text = "School"
+    participants = sorted(event.registrations.participants, key=attrgetter('name'))
+    for participant in participants:
+        row_cells = table.add_row().cells
+        row_cells[0].text = participant.name
+        row_cells[1].text = participant.school.name
 
 
 def generate_event_sheet(event):
@@ -167,5 +204,5 @@ def generate_event_sheet(event):
 
     # Finalize and save
     adjust_cell_sizes_for_judge_feedback(worksheet)
-    event_sheet = F"output/Event.{event.name}.xlsx"
+    event_sheet = F"{EVENT_SHEETS}/Event.{event.name}.xlsx"
     workbook.save(event_sheet)
