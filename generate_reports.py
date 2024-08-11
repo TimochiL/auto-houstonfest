@@ -8,7 +8,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 from setuptools.namespaces import flatten
 
 from boomer_utils import serialize_yes_or_no, adjust_cell_sizes, adjust_cell_sizes_for_judge_feedback
-from models import Participant
+from models import Participant, Registration, School
 
 MASTER_REPORT = "output/Master.Report.xlsx"
 JUDGE_REPORT = "output/Judge.Report.docx"
@@ -76,7 +76,7 @@ def create_group_table(event, table):
     header_cells = table.rows[0].cells
     header_cells[0].text = "School"
     header_cells[1].text = "Participants"
-    registrations = event.registrations.order_by(lambda r: r.school.name)
+    registrations = event.registrations.order_by(Registration.school)
     for registration in registrations:
         row_cells = table.add_row().cells
         school = list(registration.participants)[0].school
