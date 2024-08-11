@@ -32,9 +32,9 @@ def main():
 
         school = School(
             name=school_name,
-            regular_registrations=worksheet.cell(16, 2).value or 0,  # Default to zero if not specified
-            late_registrations=worksheet.cell(17, 2).value or 0,
-            total_enrolled=worksheet.cell(19, 2).value,
+            regular_registrations=int(worksheet.cell(16, 2).value or 0),  # Default to zero if not specified
+            late_registrations=int(worksheet.cell(17, 2).value or 0),
+            total_enrolled=int(worksheet.cell(19, 2).value),
             rookie_teacher=parse_yes_or_no(worksheet.cell(20, 2).value or 'no'),  # Default to no if not specified
             rookie_school=parse_yes_or_no(worksheet.cell(21, 2).value or 'no'),
             attending_state=parse_yes_or_no(worksheet.cell(22, 2).value or 'no')
