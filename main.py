@@ -14,7 +14,7 @@ EVENT_START_ROW = 25  # Where school information ends and event listings start
 
 @db_session
 def main():
-    registration_files = glob.glob("Reg.*.xlsx")
+    registration_files = glob.glob("[!Template]*.xlsx")
     if not registration_files:  # Exit if no registration files found
         print("NO REGISTRATION FILES FOUND")
         return
