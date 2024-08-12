@@ -75,7 +75,7 @@ def main():
     if parse_yes_or_no(enable_participants_sheets):
         Path('output/participants_by_school').mkdir(exist_ok=True)
         for school in schools:
-            generate_participants_sheet(event)
+            generate_participants_sheet(school)
 
     print()
     print("SCRIPT WRITTEN BY DAMIAN LALL, CHS '21")

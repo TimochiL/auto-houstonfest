@@ -103,12 +103,14 @@ def generate_participants_sheet(event):
         print("No registrations for", event.name)
         return
     workbook = Workbook()
-    worksheet = workbook.active()
+    worksheet = workbook.active
     
     # Implement generation of participants by school (INCOMPLETE: use function generate_event_sheet as reference)
+    for participant in event.participants:
+        worksheet.append([participant.name,])
     
-    event_sheet = F"{PARTICPANTS_SHEETS}/School.{event.name}.xlsx"
-    workbook.save(event_sheet)
+    participants_sheet = F"{PARTICPANTS_SHEETS}/School.{event.name}.xlsx"
+    workbook.save(participants_sheet)
 
 def generate_event_sheet(event):
     if len(event.registrations) > 0:
