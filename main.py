@@ -6,7 +6,7 @@ import openpyxl
 from pony.orm import db_session
 
 from boomer_utils import parse_yes_or_no, re_contains_words
-from generate_reports import generate_master_report, generate_participants_sheet, generate_event_sheet, generate_judge_report
+from generate_reports import generate_master_report, generate_participants_sheet, generate_judge_report
 from models import School, Participant, Event, Registration
 
 
@@ -16,7 +16,8 @@ def main():
     if not registration_files:  # Exit if no registration files found
         print("NO REGISTRATION FILES FOUND")
         return
-    enable_event_sheets = input("GENERATE EVENT SHEETS? (YES/NO) ")
+    
+    print(f"EVENTS SHEETS GENERATION IS DEPRECATED AND HAS BEEN REMOVED.")
     enable_participants_sheets = input("GENERATE PARTICPANTS SHEETS? (YES/NO) ")
     print(F"FOUND {len(registration_files)} REGISTRATION FILE(S)")
     event_count = import_events(registration_files[0])  # Import event listings from the first workbook
@@ -68,11 +69,6 @@ def main():
     schools = School.select().order_by(School.name)
     generate_master_report(events, schools)
     generate_judge_report(events)
-    
-    if parse_yes_or_no(enable_event_sheets):
-        Path('output/events').mkdir(exist_ok=True)
-        for event in events:
-            generate_event_sheet(event)
     
     if parse_yes_or_no(enable_participants_sheets):
         Path('output/participants_by_school').mkdir(exist_ok=True)
