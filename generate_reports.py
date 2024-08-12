@@ -105,7 +105,6 @@ def generate_participants_sheet(event):
     workbook = Workbook()
     worksheet = workbook.active
     
-    # Implement generation of participants by school (INCOMPLETE: use function generate_event_sheet as reference)
     for participant in event.participants:
         worksheet.append([participant.name,])
     

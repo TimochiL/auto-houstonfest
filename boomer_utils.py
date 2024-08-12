@@ -1,7 +1,12 @@
 from openpyxl.styles import Alignment
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
+import re
 
+
+def re_contains_words(hints, label: str):
+    regexp = ''.join([f"(?=.*{hint})" for hint in hints])
+    return re.search(regexp, label)
 
 def parse_yes_or_no(answer) -> bool:
     if answer is None:

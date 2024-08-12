@@ -5,16 +5,14 @@ from pathlib import Path
 import openpyxl
 from pony.orm import db_session
 
-from boomer_utils import parse_yes_or_no
+from boomer_utils import parse_yes_or_no, re_contains_words
 from generate_reports import generate_master_report, generate_participants_sheet, generate_event_sheet, generate_judge_report
 from models import School, Participant, Event, Registration
-
-EVENT_START_ROW = 25  # Where school information ends and event listings start
 
 
 @db_session
 def main():
-    registration_files = glob.glob("[!Template]*.xlsx")
+    registration_files = glob.glob("[!Template][!template]*.xlsx") # Exclude template spreadsheets
     if not registration_files:  # Exit if no registration files found
         print("NO REGISTRATION FILES FOUND")
         return
@@ -26,23 +24,27 @@ def main():
 
     schools = []
     for workbook_file in registration_files:
+        
+        
         workbook = openpyxl.load_workbook(workbook_file)
         worksheet = workbook['Original']
         school_name = worksheet.cell(4, 2).value
         print("Processing", school_name, "registration")
 
+        row_indeces = get_row_indeces(worksheet) # Get row indeces for School model
+        
         school = School(
             name=school_name,
-            regular_registrations=int(worksheet.cell(16, 2).value or 0),  # Default to zero if not specified
-            late_registrations=int(worksheet.cell(17, 2).value or 0),
-            total_enrolled=int(worksheet.cell(19, 2).value),
-            rookie_teacher=parse_yes_or_no(worksheet.cell(20, 2).value or 'no'),  # Default to no if not specified
-            rookie_school=parse_yes_or_no(worksheet.cell(21, 2).value or 'no'),
-            attending_state=parse_yes_or_no(worksheet.cell(22, 2).value or 'no')
+            regular_registrations=int(worksheet.cell(row_indeces["regular_registrations"], 2).value or 0),  # Default to zero if not specified
+            late_registrations=int(worksheet.cell(row_indeces["late_registrations"], 2).value or 0),
+            total_enrolled=int(worksheet.cell(row_indeces["total_enrolled"], 2).value),
+            rookie_teacher=parse_yes_or_no(worksheet.cell(row_indeces["rookie_teacher"], 2).value or 'no'),  # Default to no if not specified
+            rookie_school=parse_yes_or_no(worksheet.cell(row_indeces["rookie_school"], 2).value or 'no'),
+            attending_state=parse_yes_or_no(worksheet.cell(row_indeces["attending_state"], 2).value or 'no')
         )
         schools.append(school)
 
-        event_row = EVENT_START_ROW
+        event_row = row_indeces["EVENT_START_ROW"]
         for event in Event.select():
             for _ in range(max(event.max_groups, 1)):
                 participant_row = 0
@@ -88,8 +90,15 @@ def import_events(workbook_file) -> int:
     worksheet = workbook['Original']
     participant_count = 0
     previous_event = None
-
-    for row in worksheet.iter_rows(EVENT_START_ROW):
+    
+    # Find start index
+    for row in worksheet.iter_rows():
+        row_label = row[0].value
+        row_index = row[0].row
+        if re_contains_words(["Event",], row_label):
+            event_start_row = row_index + 1
+    
+    for row in worksheet.iter_rows(event_start_row):
         row_event = row[0].value
         if previous_event is not None and row_event != previous_event:
             create_event(previous_event, participant_count)
@@ -99,6 +108,38 @@ def import_events(workbook_file) -> int:
     create_event(previous_event, participant_count)
 
     return Event.select().count()
+
+
+def get_row_indeces(worksheet):
+    row_indeces = {
+        "regular_registrations": 16,
+        "late_registrations": 17,
+        "total_enrolled": 19,
+        "rookie_teacher": 20,
+        "rookie_school": 21,
+        "attending_state": 22,
+        "EVENT_START_ROW": 25,
+    }
+    for row in worksheet.iter_rows():
+        row_label = row[0].value
+        row_index = row[0].row
+        
+        if re_contains_words(['Number', 'regular'], row_label):
+            row_indeces["regular_registrations"] = row_index
+        elif re_contains_words(['Number', 'late'], row_label):
+            row_indeces["late_registrations"] = row_index
+        elif re_contains_words(['Total', 'enroll'], row_label):
+            row_indeces["total_enrolled"] = row_index
+        elif re_contains_words(['rookie', 'teacher', 'entered'], row_label):
+            row_indeces["rookie_teacher"] = row_index
+        elif re_contains_words(['rookie', 'school', 'entered'], row_label):
+            row_indeces["rookie_school"] = row_index
+        elif re_contains_words(['attend', 'State'], row_label):
+            row_indeces["attending_state"] = row_index
+        elif re_contains_words(["Event",], row_label):
+            row_indeces["EVENT_START_ROW"] = row_index+1
+            
+    return row_indeces
 
 
 def create_event(event_name, participant_count):
