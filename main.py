@@ -12,16 +12,23 @@ from models import School, Participant, Event, Registration
 
 @db_session
 def main():
-    registration_files = glob.glob("[!Template][!template]*.xlsx") # Exclude template spreadsheets
+    registration_files = glob.glob("*.xlsx")  # Include all Excel files
     if not registration_files:  # Exit if no registration files found
         print("NO REGISTRATION FILES FOUND")
         return
     
+    # Filter out template files
+    registration_files = [f for f in registration_files if not f.lower().startswith(("template", "~$"))]
+    
+    if not registration_files:
+        print("NO VALID REGISTRATION FILES FOUND (excluding templates)")
+        return
+
     print(f"EVENTS SHEETS GENERATION IS DEPRECATED AND HAS BEEN REMOVED.")
-    enable_participants_sheets = input("GENERATE PARTICPANTS SHEETS? (YES/NO) ")
-    print(F"FOUND {len(registration_files)} REGISTRATION FILE(S)")
+    enable_participants_sheets = input("GENERATE PARTICIPANTS SHEETS? (YES/NO) ")
+    print(f"FOUND {len(registration_files)} REGISTRATION FILE(S)")
     event_count = import_events(registration_files[0])  # Import event listings from the first workbook
-    print(F"IMPORTED {event_count} EVENTS")
+    print(f"IMPORTED {event_count} EVENTS")
 
     schools = []
     for workbook_file in registration_files:
