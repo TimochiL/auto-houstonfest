@@ -5,4 +5,5 @@
 /venv
 *.docx
 *.xlsx
+*.zip
 test.py

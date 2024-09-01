@@ -2,10 +2,10 @@
 
 
 a = Analysis(
-    ['D:\\My Stuff\\School\\2024-2025 HS\\Houstonfest\\auto-houstonfest\\main.py'],
-    pathex=['D:\\My Stuff\\School\\2024-2025 HS\\Houstonfest\\auto-houstonfest\\venv\\Lib\\site-packages'],
+    ['.\\main.py'],
+    pathex=[],
     binaries=[],
-    datas=[('D:\\My Stuff\\School\\2024-2025 HS\\Houstonfest\\auto-houstonfest\\boomer_utils.py', '.'), ('D:\\My Stuff\\School\\2024-2025 HS\\Houstonfest\\auto-houstonfest\\generate_reports.py', '.'), ('D:\\My Stuff\\School\\2024-2025 HS\\Houstonfest\\auto-houstonfest\\models.py', '.'), ('D:\\My Stuff\\School\\2024-2025 HS\\Houstonfest\\auto-houstonfest\\README.md', '.')],
+    datas=[('.\\boomer_utils.py', '.'), ('.\\generate_reports.py', '.'), ('.\\models.py', '.'), ('.\\README.md', '.')],
     hiddenimports=['pony.orm.dbproviders.sqlite'],
     hookspath=[],
     hooksconfig={},
