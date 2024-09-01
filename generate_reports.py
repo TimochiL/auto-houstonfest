@@ -1,6 +1,8 @@
 from operator import attrgetter
 
 from docx import Document
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.shared import Inches
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Side, Border, Font, Alignment
 from openpyxl.styles.borders import BORDER_THIN
@@ -57,6 +59,13 @@ def generate_master_report(events, schools):
 
 def generate_judge_report(events):
     events_report = Document()
+    sections = events_report.sections 
+    for section in sections:
+        section.top_margin = Inches(0.5)
+        section.bottom_margin = Inches(0.5)
+        section.right_margin = Inches(0.5)
+        section.left_margin = Inches(0.5)
+
     for event in events:
         print("Writing", event.name)
         events_report.add_heading(event.name, 0)
@@ -76,6 +85,13 @@ def create_group_table(event, table):
     header_cells = table.rows[0].cells
     header_cells[0].text = "School"
     header_cells[1].text = "Participants"
+
+    for cell in header_cells:
+        for para in cell.paragraphs:
+            para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            for run in para.runs:
+                run.font.bold = True
+
     registrations = event.registrations.order_by(Registration.school)
     for registration in registrations:
         row_cells = table.add_row().cells
@@ -89,6 +105,13 @@ def create_individual_table(event, table):
     header_cells = table.rows[0].cells
     header_cells[0].text = "Participant"
     header_cells[1].text = "School"
+
+    for cell in header_cells:
+        for para in cell.paragraphs:
+            para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            for run in para.runs:
+                run.font.bold = True
+
     participants = sorted(event.registrations.participants, key=attrgetter('name'))
     for participant in participants:
         row_cells = table.add_row().cells

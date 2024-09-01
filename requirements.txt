@@ -1,3 +1,4 @@
-openpyxl==3.0.10
-pony==0.7.16
-python-docx==0.8.11
+openpyxl
+pony
+python-docx
+auto-py-to-exe
