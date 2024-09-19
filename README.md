@@ -21,4 +21,4 @@ pip install -r requirements.txt
 1. Create a Python virtual environment called `venv` in the folder containing `main.py` 
 2. Follow the installation instructions to install dependencies in a Python virtual environment called `venv`
 3. Activate your Python virual environment in your preferred terminal
-3. Compile the script into an executable application using command `pyinstaller tsgc.spec --noconfirm`
+4. Compile the script into an executable application using command `pyinstaller tsgc.spec --noconfirm`
