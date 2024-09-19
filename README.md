@@ -14,7 +14,7 @@ pip install -r requirements.txt
 4. Run the script with `python main.py` or the appropriate executable (i.e. `hfest.exe` or `tsgc.exe`)
 5. Generated files can be found in the `output/` directory
 
-> ![NOTE]
+> [!NOTE]
 > Currently, the only executable supported is for Windows
 
 ## Compile Windows executable
