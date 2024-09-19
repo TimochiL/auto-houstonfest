@@ -127,8 +127,14 @@ def generate_participants_sheet(event):
     workbook = Workbook()
     worksheet = workbook.active
     
+    participants_list = []
+    
     for participant in event.participants:
-        worksheet.append([participant.name,])
+        participants_list.append(participant.name)
+        
+    participants_list.sort()
+    for participant in participants_list:
+        worksheet.append([participant,])
     
     participants_sheet = F"{PARTICPANTS_SHEETS}/School.{event.name}.xlsx"
     workbook.save(participants_sheet)

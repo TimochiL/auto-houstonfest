@@ -5,27 +5,20 @@ from pathlib import Path
 import openpyxl
 from pony.orm import db_session
 
-from boomer_utils import parse_yes_or_no, re_contains_words
+from boomer_utils import parse_yes_or_no, re_contains_words, throw_error
 from generate_reports import generate_master_report, generate_participants_sheet, generate_judge_report
 from models import School, Participant, Event, Registration
 
 
 @db_session
 def main():
-    registration_files = glob.glob("*.xlsx")  # Include all Excel files
-    if not registration_files:  # Exit if no registration files found
-        print("NO REGISTRATION FILES FOUND")
-        return
-    
-    # Filter out template files
-    registration_files = [f for f in registration_files if not f.lower().startswith(("template", "~$"))]
+    registration_files = [f for f in glob.glob("*.xlsx") if not ("template" in f.lower())]
     
     if not registration_files:
-        print("NO VALID REGISTRATION FILES FOUND (excluding templates)")
+        print("NO VALID REGISTRATION FILES FOUND")
         return
 
-    print(f"EVENTS SHEETS GENERATION IS DEPRECATED AND HAS BEEN REMOVED.")
-    enable_participants_sheets = input("GENERATE PARTICIPANTS SHEETS? (YES/NO) ")
+    enable_participants_sheets = input("GENERATE LISTS OF UNIQUE STUDENT NAMES PER SCHOOL? (YES/NO) ")
     print(f"FOUND {len(registration_files)} REGISTRATION FILE(S)")
     event_count = import_events(registration_files[0])  # Import event listings from the first workbook
     print(f"IMPORTED {event_count} EVENTS")
@@ -45,7 +38,7 @@ def main():
             name=school_name,
             regular_registrations=int(worksheet.cell(row_indeces["regular_registrations"], 2).value or 0),  # Default to zero if not specified
             late_registrations=int(worksheet.cell(row_indeces["late_registrations"], 2).value or 0),
-            total_enrolled=int(worksheet.cell(row_indeces["total_enrolled"], 2).value),
+            total_enrolled=int(worksheet.cell(row_indeces["total_enrolled"], 2).value or throw_error(f"{school_name} Registration sheet does not contain a valid total number enrolled students")),
             rookie_teacher=parse_yes_or_no(worksheet.cell(row_indeces["rookie_teacher"], 2).value or 'no'),  # Default to no if not specified
             rookie_school=parse_yes_or_no(worksheet.cell(row_indeces["rookie_school"], 2).value or 'no'),
             attending_state=parse_yes_or_no(worksheet.cell(row_indeces["attending_state"], 2).value or 'no')
@@ -78,7 +71,7 @@ def main():
     generate_judge_report(events)
     
     if parse_yes_or_no(enable_participants_sheets):
-        Path('output/participants_by_school').mkdir(exist_ok=True)
+        Path('output/student_names_by_school').mkdir(exist_ok=True)
         for school in schools:
             generate_participants_sheet(school)
 

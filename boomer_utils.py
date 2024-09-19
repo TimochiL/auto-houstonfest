@@ -1,12 +1,20 @@
 from openpyxl.styles import Alignment
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
-import re
+import re, time
 
 
 def re_contains_words(hints, label: str):
     regexp = ''.join([f"(?=.*{hint})" for hint in hints])
     return re.search(regexp, label)
+
+def throw_error(msg: str):
+    print(msg)
+    print("PRESS ENTER TO CONFIRM THAT YOU HAVE ACKNOWLEDGED THIS ERROR")
+    input()
+    print("ABORTING...")
+    time.sleep(3)
+    exit()
 
 def parse_yes_or_no(answer) -> bool:
     if answer is None:
