@@ -14,7 +14,7 @@ from models import Participant, Registration, School
 
 MASTER_REPORT = "output/Master.Report.xlsx"
 JUDGE_REPORT = "output/Judge.Report.docx"
-PARTICPANTS_SHEETS = "output/participants_by_school"
+PARTICPANTS_SHEETS = "output/student names by school"
 REGULAR_FEE = 12
 LATE_FEE = 15
 
@@ -120,7 +120,7 @@ def create_individual_table(event, table):
 
 def generate_participants_sheet(event):
     if len(event.participants) > 0:
-        print("Generating", event.name, "participants by school sheet")
+        print("\nGenerating", event.name, "list of student names")
     else:
         print("No registrations for", event.name)
         return
@@ -138,3 +138,4 @@ def generate_participants_sheet(event):
     
     participants_sheet = F"{PARTICPANTS_SHEETS}/School.{event.name}.xlsx"
     workbook.save(participants_sheet)
+    print("Saved",participants_sheet)

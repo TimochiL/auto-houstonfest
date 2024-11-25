@@ -38,7 +38,7 @@ def main():
             name=school_name,
             regular_registrations=int(worksheet.cell(row_indeces["regular_registrations"], 2).value or 0),  # Default to zero if not specified
             late_registrations=int(worksheet.cell(row_indeces["late_registrations"], 2).value or 0),
-            total_enrolled=int(worksheet.cell(row_indeces["total_enrolled"], 2).value or throw_error(f"{school_name} Registration sheet does not contain a valid total number enrolled students")),
+            total_enrolled=int(worksheet.cell(row_indeces["total_enrolled"], 2).value or throw_error(f"{school_name} Registration sheet does not contain a valid total number of enrolled students")),
             rookie_teacher=parse_yes_or_no(worksheet.cell(row_indeces["rookie_teacher"], 2).value or 'no'),  # Default to no if not specified
             rookie_school=parse_yes_or_no(worksheet.cell(row_indeces["rookie_school"], 2).value or 'no'),
             attending_state=parse_yes_or_no(worksheet.cell(row_indeces["attending_state"], 2).value or 'no')
@@ -71,12 +71,16 @@ def main():
     generate_judge_report(events)
     
     if parse_yes_or_no(enable_participants_sheets):
-        Path('output/student_names_by_school').mkdir(exist_ok=True)
+        Path('output/student names by school').mkdir(exist_ok=True)
         for school in schools:
             generate_participants_sheet(school)
 
     print()
     print("SCRIPT WRITTEN BY DAMIAN LALL, CHS '21")
+    print("REVISED AND UPDATED BY TIMOTHY LIU, CHS '25;")
+    print("                       ANSHUL MAGO, CHS '25;")
+    print("                       RAGHAV KENCHANNAVAR, CHS '25")
+    print()
     print("TASK COMPLETE, PRESS ENTER TO EXIT", end='')
     input()
 
