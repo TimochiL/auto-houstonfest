@@ -1,12 +1,12 @@
 import glob
-import re
+import re, time
 from pathlib import Path
 
 import openpyxl
 from pony.orm import db_session
 
 from boomer_utils import parse_yes_or_no, re_contains_words, throw_error
-from generate_reports import generate_master_report, generate_participants_sheet, generate_judge_report
+from generate_reports import generate_master_report, generate_participants_sheets, generate_judge_report
 from models import School, Participant, Event, Registration
 
 
@@ -16,6 +16,10 @@ def main():
     
     if not registration_files:
         print("NO VALID REGISTRATION FILES FOUND")
+        time.sleep(0.5)
+        print()
+        print("Terminating script...")
+        time.sleep(3)
         return
 
     enable_participants_sheets = input("GENERATE LISTS OF UNIQUE STUDENT NAMES PER SCHOOL? (YES/NO) ")
@@ -71,14 +75,16 @@ def main():
     generate_judge_report(events)
     
     if parse_yes_or_no(enable_participants_sheets):
-        Path('output/student names by school').mkdir(exist_ok=True)
-        for school in schools:
-            generate_participants_sheet(school)
+        # Path('output/student names by school').mkdir(exist_ok=True)
+        # for school in schools:
+            # generate_participants_sheet(school)
+        generate_participants_sheets(schools)
+        
 
     print()
     print("SCRIPT WRITTEN BY DAMIAN LALL, CHS '21")
-    print("REVISED AND UPDATED BY TIMOTHY LIU, CHS '25;")
-    print("                       ANSHUL MAGO, CHS '25;")
+    print("REVISED AND UPDATED BY TIMOTHY LIU, CHS '25")
+    print("                       ANSHUL MAGO, CHS '25")
     print("                       RAGHAV KENCHANNAVAR, CHS '25")
     print()
     print("TASK COMPLETE, PRESS ENTER TO EXIT", end='')

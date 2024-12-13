@@ -14,7 +14,7 @@ from models import Participant, Registration, School
 
 MASTER_REPORT = "output/Master.Report.xlsx"
 JUDGE_REPORT = "output/Judge.Report.docx"
-PARTICPANTS_SHEETS = "output/student names by school"
+PARTICIPANTS_SHEETS = "output/Schools.Student.Names.xlsx"
 REGULAR_FEE = 12
 LATE_FEE = 15
 
@@ -78,7 +78,7 @@ def generate_judge_report(events):
         events_report.add_page_break()
 
     events_report.save(JUDGE_REPORT)
-    print("Saved", JUDGE_REPORT)
+    print("Saved", JUDGE_REPORT,"\n")
 
 
 def create_group_table(event, table):
@@ -118,24 +118,27 @@ def create_individual_table(event, table):
         row_cells[0].text = participant.name
         row_cells[1].text = participant.school.name
 
-def generate_participants_sheet(event):
-    if len(event.participants) > 0:
-        print("\nGenerating", event.name, "list of student names")
-    else:
-        print("No registrations for", event.name)
-        return
+def generate_participants_sheets(events):
     workbook = Workbook()
-    worksheet = workbook.active
+    workbook.remove(workbook.active)
     
-    participants_list = []
-    
-    for participant in event.participants:
-        participants_list.append(participant.name)
+    for event in events:
+        worksheet = workbook.create_sheet(event.name)
+        if len(event.participants) > 0:
+            print("Generating", event.name, "list of student names")
+        else:
+            print("No registrations for", event.name)
+            return
         
-    participants_list.sort()
-    for participant in participants_list:
-        worksheet.append([participant,])
-    
-    participants_sheet = F"{PARTICPANTS_SHEETS}/School.{event.name}.xlsx"
-    workbook.save(participants_sheet)
-    print("Saved",participants_sheet)
+        participants_list = []
+        
+        for participant in event.participants:
+            participants_list.append(participant.name)
+            
+        participants_list.sort()
+        for participant in participants_list:
+            worksheet.append([participant,])
+        
+        workbook.save(PARTICIPANTS_SHEETS)
+        
+    print("Saved",PARTICIPANTS_SHEETS)
