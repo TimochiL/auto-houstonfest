@@ -98,7 +98,8 @@ def create_group_table(event, table):
         school = list(registration.participants)[0].school
         row_cells[0].text = school.name
         participants = registration.participants.order_by(Participant.name)
-        row_cells[1].text = '\n'.join(p.name for p in participants)
+        p_list = list(participants)
+        row_cells[1].text = '\n'.join(p.name for p in p_list)
 
 
 def create_individual_table(event, table):

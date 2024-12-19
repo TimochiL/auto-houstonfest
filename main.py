@@ -1,5 +1,4 @@
-import glob
-import re, time
+import glob, re, time, os, sys
 from pathlib import Path
 
 import openpyxl
@@ -12,6 +11,8 @@ from models import School, Participant, Event, Registration
 
 @db_session
 def main():
+    set_working_dir()
+
     registration_files = [f for f in glob.glob("*.xlsx") if not ("template" in f.lower())]
     
     if not registration_files:
@@ -75,9 +76,6 @@ def main():
     generate_judge_report(events)
     
     if parse_yes_or_no(enable_participants_sheets):
-        # Path('output/student names by school').mkdir(exist_ok=True)
-        # for school in schools:
-            # generate_participants_sheet(school)
         generate_participants_sheets(schools)
         
 
@@ -90,6 +88,11 @@ def main():
     print("TASK COMPLETE, PRESS ENTER TO EXIT", end='')
     input()
 
+def set_working_dir():
+    filePath = os.path.realpath(sys.executable) # Path to exectuable
+    #filePath = os.path.realpath(__file__) # Path to Python file
+    parentDir = os.path.dirname(filePath)
+    os.chdir(parentDir)
 
 def import_events(workbook_file) -> int:
     workbook = openpyxl.load_workbook(workbook_file)
