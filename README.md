@@ -1,5 +1,5 @@
 # auto-houstonfest
-Houstonfest and Texas State German Contests registration automation scripts
+Houstonfest and Texas State German Contests registration files generation scripts
 
 ## Installation
 Install the necessary dependencies with pip if running from source
@@ -15,15 +15,24 @@ pip install -r requirements.txt
 5. Generated files can be found in the `output/` directory
 
 > [!NOTE]
-> Windows-support ONLY.
-> Mac and Linux will be tested soon.
+> Windows-support.
+> **NEW** Mac-support.
 
 ## Compile Windows executable
 1. Create a Python virtual environment called `venv` in the folder containing `main.py` 
 2. Follow the installation instructions to install dependencies in a Python virtual environment called `venv`
-3. Activate your Python virual environment in your preferred terminal
-4. Compile the script into an executable application using command `pyinstaller tsgc.spec --noconfirm`
+3. Activate your Python virtual environment in your preferred terminal
+4. Compile the script into an executable application by running the command `pyinstaller tsgc.spec --noconfirm`. Alternatively, run the following command:
 
-## Run Windows executable
-1. Add registration sheets to the same folder as the executable.
+`pyinstaller --onedir --console --name "tsgc" --contents-directory 'bin' --add-data "boomer_utils.py;." --add-data "generate_reports.py;." --add-data "models.py;." --hidden-import "pony.orm.dbproviders.sqlite"  "main.py" --clean --noconfirm`
+
+> [!WARNING]
+> The build spec file has not been tested on MacOS.
+> For MacOS, follow the previous steps 1-3.
+> To use [Pyinstaller](https://pyinstaller.org/en/stable/) on MacOS, run the following command:
+>
+> `pyinstaller --onefile --console --name "tsgc" --add-data "boomer_utils.py:." --add-data "generate_reports.py:." --add-data "models.py:." --hidden-import "pony" --hidden-import "pony.orm" --hidden-import "pony.orm.dbproviders.sqlite" "main.py"`
+
+## Run executable
+1. Add registration sheets to the executable parent folder (same folder as the executable, NOT "bin").
 2. Double click the executable OR run executable from command line.
