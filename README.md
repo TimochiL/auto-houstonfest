@@ -32,7 +32,7 @@ Compile the script into an executable application by running the command `pyinst
 >
 > For Windows machines ONLY:
 >
-> `pyinstaller --onedir --console --name "tsgc" --contents-directory "bin" --add-data "boomer_utils.py;." --add-data "generate_reports.py;." --add-data "models.py;." --hidden-import "pony" --hidden-import "pony.orm" --hidden-import "pony.orm.dbproviders.sqlite""  "main.py" --clean --noconfirm`
+> `pyinstaller --onedir --console --name "tsgc" --contents-directory "bin" --add-data "boomer_utils.py;." --add-data "generate_reports.py;." --add-data "models.py;." --hidden-import "pony" --hidden-import "pony.orm" --hidden-import "pony.orm.dbproviders.sqlite"  "main.py" --clean --noconfirm`
 >
 > For MacOS only:
 >
