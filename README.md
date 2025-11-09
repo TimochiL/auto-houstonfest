@@ -1,5 +1,7 @@
 # auto-houstonfest
-Houstonfest and Texas State German Contests registration files generation scripts
+Houstonfest and Texas State German Contests registration files generation scripts and executables
+
+### Original Repo: https://github.com/PotatoCurry/auto-houstonfest
 
 ## Installation
 Install the necessary dependencies with pip if running from source
